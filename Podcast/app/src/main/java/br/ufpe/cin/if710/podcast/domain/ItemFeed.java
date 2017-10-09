@@ -1,6 +1,8 @@
 package br.ufpe.cin.if710.podcast.domain;
 
-public class ItemFeed {
+import java.io.Serializable;
+
+public class ItemFeed implements Serializable {
     private final String title;
     private final String link;
     private final String pubDate;
@@ -20,9 +22,7 @@ public class ItemFeed {
         return title;
     }
 
-    public String getLink() {
-        return link;
-    }
+    public String getLink() { return link; }
 
     public String getPubDate() {
         return pubDate;
