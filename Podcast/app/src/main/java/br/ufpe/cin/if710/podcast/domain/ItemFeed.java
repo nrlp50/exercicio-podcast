@@ -1,5 +1,7 @@
 package br.ufpe.cin.if710.podcast.domain;
 
+import android.media.MediaPlayer;
+
 import java.io.Serializable;
 
 public class ItemFeed implements Serializable {
@@ -8,14 +10,18 @@ public class ItemFeed implements Serializable {
     private final String pubDate;
     private final String description;
     private final String downloadLink;
+    private final String fileUri;
+    private final int time;
 
-
-    public ItemFeed(String title, String link, String pubDate, String description, String downloadLink) {
+    public ItemFeed(String title, String link, String pubDate, String description,
+                    String downloadLink, String fileUri, int time) {
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
         this.description = description;
         this.downloadLink = downloadLink;
+        this.fileUri = fileUri;
+        this.time = time;
     }
 
     public String getTitle() {
@@ -36,6 +42,9 @@ public class ItemFeed implements Serializable {
         return downloadLink;
     }
 
+    public int getTime(){return time;}
+
+    public String getFileUri(){ return fileUri;}
     @Override
     public String toString() {
         return title;

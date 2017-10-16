@@ -1,25 +1,37 @@
 package br.ufpe.cin.if710.podcast.ui.adapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import android.app.IntentService;
+import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.ui.DownloadService;
 import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
 import br.ufpe.cin.if710.podcast.ui.MainActivity;
+import br.ufpe.cin.if710.podcast.ui.MusicPlayerService;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
-    int linkResource;
-    Context adapterContext;
-    List<ItemFeed> items;
+    private int linkResource;
+    private Context adapterContext;
+    private List<ItemFeed> items;
     public XmlFeedAdapter(Context context, int resource, List<ItemFeed> objects) {
         super(context, resource, objects);
         linkResource = resource;
@@ -57,16 +69,20 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     static class ViewHolder {
         TextView item_title;
         TextView item_date;
+        Button button;
     }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-       final  ViewHolder holder;
+        final  ViewHolder holder;
+        final ItemFeed itemFeed = getItem(position);
+
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
             holder = new ViewHolder();
             holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
             holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+            holder.button = (Button) convertView.findViewById(R.id.item_action);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -75,6 +91,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
 
+
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,7 +99,6 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     Intent myIntent = new Intent(adapterContext, EpisodeDetailActivity.class);
                     myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                    myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     myIntent.putExtra(MainActivity.EXTRA_TITLE, items.get(position).getTitle());
                     myIntent.putExtra(MainActivity.EXTRA_DESCRIPTION, items.get(position).getDescription());
                     myIntent.putExtra(MainActivity.EXTRA_DATE, items.get(position).getPubDate());
@@ -95,6 +111,43 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             }
         });
 
+        if(holder.button.getText().toString().equals("Baixando") == true && itemFeed.getFileUri() != ""){
+            Log.d("Teste FileUri:", itemFeed.getFileUri());
+            holder.button.setEnabled(true);
+            holder.button.setText("Tocar");
+        }else if(itemFeed.getFileUri() == ""){
+            holder.button.setEnabled(true);
+            holder.button.setText("baixar");
+        }
+
+        holder.button.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View src){
+
+                if(holder.button.getText().toString().equals("baixar")){
+                    holder.button.setEnabled(false);
+                    holder.button.setText("Baixando");
+                    Intent myIntentService = new Intent(adapterContext, DownloadService.class);
+                    myIntentService.putExtra("downloadLink", items.get(position).getDownloadLink() );
+                    adapterContext.startService(myIntentService);
+                }else if(holder.button.getText().toString().equals("Tocar")){
+                    holder.button.setText("Parar");
+                    holder.button.setEnabled(true);
+                    Intent myIntentService = new Intent(adapterContext, MusicPlayerService.class);
+                    myIntentService.putExtra("uri", Uri.parse(items.get(position).getDownloadLink() ));
+                    myIntentService.putExtra("time", itemFeed.getTime());
+                    adapterContext.startService(myIntentService);
+                }else{
+                    holder.button.setText("Tocar");
+                    holder.button.setEnabled(true);
+                }
+
+            }
+        });
+
+
         return convertView;
     }
+
+
+
 }

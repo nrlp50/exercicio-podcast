@@ -22,6 +22,7 @@ public class PodcastProviderContract {
     public final static String EPISODE_FILE_URI = "downloadUri";
 
 
+
     public final static String[] ALL_COLUMNS = {
             _ID, EPISODE_TITLE, EPISODE_DATE, EPISODE_LINK, EPISODE_DESC, EPISODE_DOWNLOAD_LINK, EPISODE_FILE_URI};
 

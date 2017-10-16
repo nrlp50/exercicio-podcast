@@ -1,13 +1,22 @@
 package br.ufpe.cin.if710.podcast.ui;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.UserDictionary;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,8 +62,19 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         items = (ListView) findViewById(R.id.items);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    1);
+        }
+
+
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,7 +130,7 @@ public class MainActivity extends Activity {
                     cv.put(PodcastProviderContract.EPISODE_DESC, item.getDescription());
                     cv.put(PodcastProviderContract.EPISODE_DOWNLOAD_LINK, item.getDownloadLink());
                     cv.put(PodcastProviderContract.EPISODE_LINK, item.getLink());
-                    cv.put(PodcastProviderContract.EPISODE_FILE_URI, "");
+                    cv.put(PodcastProviderContract.EPISODE_FILE_URI, item.getFileUri());
 
                     getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
                 }
@@ -139,6 +159,7 @@ public class MainActivity extends Activity {
         }
     }
 
+
     private class ReadFromDatabase extends AsyncTask<Void, Void, Cursor> {
         @Override
         protected void onPreExecute() {
@@ -156,10 +177,11 @@ public class MainActivity extends Activity {
                     PodcastProviderContract.EPISODE_DATE,
                     PodcastProviderContract.EPISODE_DESC,
                     PodcastProviderContract.EPISODE_DOWNLOAD_LINK,
-                    PodcastProviderContract.EPISODE_LINK
+                    PodcastProviderContract.EPISODE_LINK,
+                    PodcastProviderContract.EPISODE_FILE_URI
             };
 
-                cursor = cr.query(PodcastProviderContract.EPISODE_LIST_URI, projection,null,null,null,null);
+            cursor = cr.query(PodcastProviderContract.EPISODE_LIST_URI, projection,null,null,null);
 
             return cursor;
         }
@@ -179,10 +201,12 @@ public class MainActivity extends Activity {
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DATE)),
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DESC)),
-                        cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_LINK))
-
+                        cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_LINK)),
+                        cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI)),
+                        0
                 ));
             }
+
             cursor.close();
             XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
 
@@ -192,6 +216,50 @@ public class MainActivity extends Activity {
 
         }
     }
+//
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+    }
+
+
+    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent i) {
+
+            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
+            String donwloadLink = i.getStringExtra("donwloadLink");
+            String fileUri = i.getStringExtra("uri");
+
+
+            String mSelectionClause = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
+            String[] mSelectionArgs = {donwloadLink};
+
+
+            ContentValues cv = new ContentValues();
+            cv.put(PodcastProviderContract.EPISODE_FILE_URI, fileUri);
+
+
+
+
+            int mRowsUpdated = getContentResolver().update(
+                    PodcastProviderContract.EPISODE_LIST_URI,   // the user dictionary content URI
+                    cv,                       // the columns to update
+                    mSelectionClause,         // the column to select on
+                    mSelectionArgs            // the value to compare to
+            );
+            Toast.makeText(ctxt, mRowsUpdated, Toast.LENGTH_LONG).show();
+            new ReadFromDatabase().execute();
+        }
+    };
 
     //TODO Opcional - pesquise outros meios de obter arquivos da internet
     private String getRssFeed(String feed) throws IOException {
