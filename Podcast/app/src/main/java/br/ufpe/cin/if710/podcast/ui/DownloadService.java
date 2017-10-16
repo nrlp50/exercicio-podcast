@@ -61,8 +61,9 @@ public class DownloadService extends IntentService{
             }
 
             Intent myIntent = new Intent(DOWNLOAD_COMPLETE);
-            myIntent.putExtra("uri", Uri.parse("file://"+output.getAbsolutePath()).toString());
+
             myIntent.putExtra("downloadLink", i.getStringExtra("downloadLink"));
+
             LocalBroadcastManager.getInstance(this).sendBroadcast(myIntent);
 
         } catch (IOException e2) {

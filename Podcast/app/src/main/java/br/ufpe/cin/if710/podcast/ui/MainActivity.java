@@ -10,9 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.UserDictionary;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -28,6 +30,7 @@ import android.widget.Toast;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -132,7 +135,14 @@ public class MainActivity extends Activity {
                     cv.put(PodcastProviderContract.EPISODE_LINK, item.getLink());
                     cv.put(PodcastProviderContract.EPISODE_FILE_URI, item.getFileUri());
 
-                    getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+                    String selection = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
+                    String[] selectionArgs = {item.getDownloadLink()};
+
+
+                    Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null,selection,selectionArgs,null);
+                    if(cursor == null)
+                        getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+                    else cursor.close();
                 }
 
             } catch (IOException e) {
@@ -147,13 +157,6 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
             Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
-
-            //Adapter Personalizado
-            //XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-
-            //atualizar o list view
-            //items.setAdapter(adapter);
-            //items.setTextFilterEnabled(true);
 
             new ReadFromDatabase().execute();
         }
@@ -190,11 +193,6 @@ public class MainActivity extends Activity {
         protected void onPostExecute(Cursor cursor) {
             Toast.makeText(getApplicationContext(), "Lendo do Database...", Toast.LENGTH_SHORT).show();
 
-            //Adapter Personalizado
-//            CustomCursorAdapter adapter = new CustomCursorAdapter(getApplicationContext(), cursor);
-//            //atualizar o list view
-//            items.setAdapter(adapter);
-//            items.setTextFilterEnabled(true);
             ArrayList<ItemFeed> feed = new ArrayList<ItemFeed>();
             while(cursor.moveToNext()) {
                 feed.add( new ItemFeed(cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_TITLE)),
@@ -236,18 +234,24 @@ public class MainActivity extends Activity {
         public void onReceive(Context ctxt, Intent i) {
 
             Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
-            String donwloadLink = i.getStringExtra("donwloadLink");
-            String fileUri = i.getStringExtra("uri");
 
+            String downloadLink = i.getStringExtra("downloadLink");
+
+
+            File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+            root.mkdirs();
+
+            Uri uri = Uri.parse(downloadLink);
+            File output = new File(root, uri.getLastPathSegment());
+            String fileUri = output.getAbsolutePath();
 
             String mSelectionClause = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
-            String[] mSelectionArgs = {donwloadLink};
+            String[] mSelectionArgs = {downloadLink};
 
 
             ContentValues cv = new ContentValues();
             cv.put(PodcastProviderContract.EPISODE_FILE_URI, fileUri);
-
-
 
 
             int mRowsUpdated = getContentResolver().update(
@@ -256,7 +260,8 @@ public class MainActivity extends Activity {
                     mSelectionClause,         // the column to select on
                     mSelectionArgs            // the value to compare to
             );
-            Toast.makeText(ctxt, mRowsUpdated, Toast.LENGTH_LONG).show();
+
+            Toast.makeText(ctxt,""+mRowsUpdated, Toast.LENGTH_LONG).show();
             new ReadFromDatabase().execute();
         }
     };

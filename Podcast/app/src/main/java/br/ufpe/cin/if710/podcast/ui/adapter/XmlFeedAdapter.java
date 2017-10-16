@@ -111,14 +111,14 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             }
         });
 
-        if(holder.button.getText().toString().equals("Baixando") == true && itemFeed.getFileUri() != ""){
-            Log.d("Teste FileUri:", itemFeed.getFileUri());
-            holder.button.setEnabled(true);
-            holder.button.setText("Tocar");
-        }else if(itemFeed.getFileUri() == ""){
-            holder.button.setEnabled(true);
-            holder.button.setText("baixar");
-        }
+//        if( itemFeed.getFileUri() != ""){
+//            Log.d("Teste FileUri:", itemFeed.getFileUri());
+//            holder.button.setEnabled(true);
+//            holder.button.setText("Tocar");
+//        }else {
+//            holder.button.setEnabled(true);
+//            holder.button.setText("baixar");
+//        }
 
         holder.button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View src){
@@ -130,12 +130,12 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     myIntentService.putExtra("downloadLink", items.get(position).getDownloadLink() );
                     adapterContext.startService(myIntentService);
                 }else if(holder.button.getText().toString().equals("Tocar")){
-                    holder.button.setText("Parar");
-                    holder.button.setEnabled(true);
-                    Intent myIntentService = new Intent(adapterContext, MusicPlayerService.class);
-                    myIntentService.putExtra("uri", Uri.parse(items.get(position).getDownloadLink() ));
-                    myIntentService.putExtra("time", itemFeed.getTime());
-                    adapterContext.startService(myIntentService);
+//                    holder.button.setText("Parar");
+//                    holder.button.setEnabled(true);
+//                    Intent myIntentService = new Intent(adapterContext, MusicPlayerService.class);
+//                    myIntentService.putExtra("uri", Uri.parse(items.get(position).getDownloadLink() ));
+//                    myIntentService.putExtra("time", itemFeed.getTime());
+//                    adapterContext.startService(myIntentService);
                 }else{
                     holder.button.setText("Tocar");
                     holder.button.setEnabled(true);
