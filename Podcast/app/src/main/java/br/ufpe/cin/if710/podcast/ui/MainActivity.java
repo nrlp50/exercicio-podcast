@@ -73,9 +73,6 @@ public class MainActivity extends Activity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     1);
         }
-
-
-
     }
 
 
@@ -134,15 +131,17 @@ public class MainActivity extends Activity {
                     cv.put(PodcastProviderContract.EPISODE_DOWNLOAD_LINK, item.getDownloadLink());
                     cv.put(PodcastProviderContract.EPISODE_LINK, item.getLink());
                     cv.put(PodcastProviderContract.EPISODE_FILE_URI, item.getFileUri());
+                    cv.put(PodcastProviderContract.EPISODE_STATE, item.getState());
+                    cv.put(PodcastProviderContract.EPISODE_TIME, String.valueOf(item.getTime()) );
 
                     String selection = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
                     String[] selectionArgs = {item.getDownloadLink()};
 
 
-                    Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null,selection,selectionArgs,null);
-                    if(cursor == null)
+                    Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null, selection, selectionArgs,null);
+                    if(cursor.getCount() == 0) {
                         getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
-                    else cursor.close();
+                    }else cursor.close();
                 }
 
             } catch (IOException e) {
@@ -156,7 +155,8 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_LONG).show();
 
             new ReadFromDatabase().execute();
         }
@@ -181,7 +181,9 @@ public class MainActivity extends Activity {
                     PodcastProviderContract.EPISODE_DESC,
                     PodcastProviderContract.EPISODE_DOWNLOAD_LINK,
                     PodcastProviderContract.EPISODE_LINK,
-                    PodcastProviderContract.EPISODE_FILE_URI
+                    PodcastProviderContract.EPISODE_FILE_URI,
+                    PodcastProviderContract.EPISODE_STATE,
+                    PodcastProviderContract.EPISODE_TIME
             };
 
             cursor = cr.query(PodcastProviderContract.EPISODE_LIST_URI, projection,null,null,null);
@@ -201,11 +203,11 @@ public class MainActivity extends Activity {
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DESC)),
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_LINK)),
                         cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI)),
-                        0
+                        cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_STATE)),
+                        Integer.parseInt(cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_TIME)))
                 ));
             }
 
-            cursor.close();
             XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
 
             //atualizar o list view
@@ -216,19 +218,32 @@ public class MainActivity extends Activity {
     }
 //
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
         IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+        IntentFilter k = new IntentFilter(MusicPlayerService.PLAYER_FINISHED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onPlayerFinishedEvent, k);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onPlayerFinishedEvent);
     }
 
+    private BroadcastReceiver onPlayerFinishedEvent=new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent i) {
+
+
+
+            new ReadFromDatabase().execute();
+        }
+    };
 
     private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
@@ -252,7 +267,7 @@ public class MainActivity extends Activity {
 
             ContentValues cv = new ContentValues();
             cv.put(PodcastProviderContract.EPISODE_FILE_URI, fileUri);
-
+            cv.put(PodcastProviderContract.EPISODE_STATE, "2");
 
             int mRowsUpdated = getContentResolver().update(
                     PodcastProviderContract.EPISODE_LIST_URI,   // the user dictionary content URI

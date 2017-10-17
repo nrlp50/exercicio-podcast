@@ -90,7 +90,7 @@ public class XmlFeedParser {
             }
         }
 
-        return new ItemFeed(title, link==null?"":link, pubDate, description, downloadLink,"",0);
+        return new ItemFeed(title, link==null?"":link, pubDate, description, downloadLink,"","0", 0);
 
     }
 

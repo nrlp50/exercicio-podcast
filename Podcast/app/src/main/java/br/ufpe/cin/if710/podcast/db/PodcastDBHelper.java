@@ -26,8 +26,9 @@ public class PodcastDBHelper extends SQLiteOpenHelper {
     public final static String[] columns = {
             PodcastProviderContract._ID, PodcastProviderContract.EPISODE_TITLE, PodcastProviderContract.EPISODE_DATE,
             PodcastProviderContract.EPISODE_LINK, PodcastProviderContract.EPISODE_DESC, PodcastProviderContract.EPISODE_DOWNLOAD_LINK,
-            PodcastProviderContract.EPISODE_FILE_URI
+            PodcastProviderContract.EPISODE_FILE_URI, PodcastProviderContract.EPISODE_STATE
     };
+
     final private static String CREATE_CMD =
             "CREATE TABLE "+PodcastProviderContract.DATABASE_TABLE+" (" + PodcastProviderContract._ID
                     + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -36,8 +37,9 @@ public class PodcastDBHelper extends SQLiteOpenHelper {
                     + PodcastProviderContract.EPISODE_LINK + " TEXT NOT NULL, "
                     + PodcastProviderContract.EPISODE_DESC + " TEXT NOT NULL, "
                     + PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " TEXT NOT NULL, "
-                    + PodcastProviderContract.EPISODE_FILE_URI + " TEXT NOT NULL)";
-
+                    + PodcastProviderContract.EPISODE_FILE_URI + " TEXT NOT NULL, "
+                    + PodcastProviderContract.EPISODE_STATE + " TEXT NOT NULL,"
+                    + PodcastProviderContract.EPISODE_TIME + " TEXT NOT NULL)";
 
 
     @Override

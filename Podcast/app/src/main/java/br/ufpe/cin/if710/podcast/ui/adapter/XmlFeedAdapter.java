@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -111,35 +112,69 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             }
         });
 
-//        if( itemFeed.getFileUri() != ""){
-//            Log.d("Teste FileUri:", itemFeed.getFileUri());
-//            holder.button.setEnabled(true);
-//            holder.button.setText("Tocar");
-//        }else {
-//            holder.button.setEnabled(true);
-//            holder.button.setText("baixar");
-//        }
+        if(itemFeed.getState().equals("0")){
+            holder.button.setEnabled(true);
+            holder.button.setText("Baixar");
+        }else if(itemFeed.getState().equals("1")){
+            holder.button.setEnabled(false);
+            holder.button.setText("Baixando");
+        }else if(itemFeed.getState().equals("2")){
+            holder.button.setEnabled(true);
+            holder.button.setText("Tocar");
+        }else {
+            holder.button.setEnabled(true);
+            holder.button.setText("Parar");
+        }
+
 
         holder.button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View src){
+                String mSelectionClause = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
+                String[] mSelectionArgs = {itemFeed.getDownloadLink()};
 
-                if(holder.button.getText().toString().equals("baixar")){
+
+                ContentValues cv = new ContentValues();
+
+                Intent mediaService = new Intent(adapterContext, MusicPlayerService.class);
+
+
+                if(holder.button.getText().toString().equals("Baixar")){
                     holder.button.setEnabled(false);
                     holder.button.setText("Baixando");
                     Intent myIntentService = new Intent(adapterContext, DownloadService.class);
                     myIntentService.putExtra("downloadLink", items.get(position).getDownloadLink() );
+
+
                     adapterContext.startService(myIntentService);
                 }else if(holder.button.getText().toString().equals("Tocar")){
-//                    holder.button.setText("Parar");
-//                    holder.button.setEnabled(true);
-//                    Intent myIntentService = new Intent(adapterContext, MusicPlayerService.class);
-//                    myIntentService.putExtra("uri", Uri.parse(items.get(position).getDownloadLink() ));
-//                    myIntentService.putExtra("time", itemFeed.getTime());
-//                    adapterContext.startService(myIntentService);
-                }else{
-                    holder.button.setText("Tocar");
+                    holder.button.setText("Parar");
                     holder.button.setEnabled(true);
+
+                    mediaService.putExtra("time", itemFeed.getTime());
+                    mediaService.putExtra("uri", itemFeed.getFileUri());
+                    cv.put(PodcastProviderContract.EPISODE_STATE, "3");
+                    int mRowsUpdated = adapterContext.getContentResolver().update(
+                            PodcastProviderContract.EPISODE_LIST_URI,   // the user dictionary content URI
+                            cv,                       // the columns to update
+                            mSelectionClause,         // the column to select on
+                            mSelectionArgs            // the value to compare to
+                    );
+
+                    adapterContext.startService(mediaService);
+
+                }else{
+                    cv.put(PodcastProviderContract.EPISODE_STATE, "2");
+                    int mRowsUpdated = adapterContext.getContentResolver().update(
+                            PodcastProviderContract.EPISODE_LIST_URI,   // the user dictionary content URI
+                            cv,                       // the columns to update
+                            mSelectionClause,         // the column to select on
+                            mSelectionArgs            // the value to compare to
+                    );
+
+                    adapterContext.stopService(mediaService);
+
                 }
+
 
             }
         });

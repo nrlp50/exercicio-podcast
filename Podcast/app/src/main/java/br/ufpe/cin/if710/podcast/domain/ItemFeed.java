@@ -11,16 +11,18 @@ public class ItemFeed implements Serializable {
     private final String description;
     private final String downloadLink;
     private final String fileUri;
+    private final String state;
     private final int time;
 
     public ItemFeed(String title, String link, String pubDate, String description,
-                    String downloadLink, String fileUri, int time) {
+                    String downloadLink, String fileUri, String state, int time) {
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
         this.description = description;
         this.downloadLink = downloadLink;
         this.fileUri = fileUri;
+        this.state = state;
         this.time = time;
     }
 
@@ -44,6 +46,7 @@ public class ItemFeed implements Serializable {
 
     public int getTime(){return time;}
 
+    public String getState(){return state; }
     public String getFileUri(){ return fileUri;}
     @Override
     public String toString() {
