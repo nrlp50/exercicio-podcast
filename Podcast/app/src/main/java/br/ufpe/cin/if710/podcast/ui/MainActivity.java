@@ -2,6 +2,7 @@ package br.ufpe.cin.if710.podcast.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -10,6 +11,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -48,6 +51,9 @@ import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 import android.util.Log;
 
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
+
 public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
@@ -55,6 +61,7 @@ public class MainActivity extends Activity {
     public final static String EXTRA_TITLE = "br.ufpe.cin.if710.podcast.TITLE";
     public final static String EXTRA_DATE = "br.ufpe.cin.if710.podcast.EXTRA_DATE";
     public final static String EXTRA_DESCRIPTION = "br.ufpe.cin.if710.podcast.EXTRA_DESCRIPTION";
+    private RefWatcher refWatcher;
     //TODO teste com outros links de podcast
 
     private ListView items;
@@ -63,6 +70,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LeakCanary.install(this.getApplication());
 
         items = (ListView) findViewById(R.id.items);
         if (ContextCompat.checkSelfPermission(this,
@@ -110,6 +118,19 @@ public class MainActivity extends Activity {
         adapter.clear();
     }
 
+    private boolean isNetworkAvailable() {
+
+        Toast.makeText(getApplicationContext(), "internet", Toast.LENGTH_SHORT).show();
+
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
+
+
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
@@ -121,7 +142,10 @@ public class MainActivity extends Activity {
             List<ItemFeed> itemList = new ArrayList<>();
 
             try {
-                itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+//                    isNetworkAvailable();
+
+                    itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+
 
                 for(ItemFeed item : itemList){
                     ContentValues cv = new ContentValues();
@@ -187,12 +211,12 @@ public class MainActivity extends Activity {
             };
 
             cursor = cr.query(PodcastProviderContract.EPISODE_LIST_URI, projection,null,null,null);
-
             return cursor;
         }
 
         @Override
         protected void onPostExecute(Cursor cursor) {
+
             Toast.makeText(getApplicationContext(), "Lendo do Database...", Toast.LENGTH_SHORT).show();
 
             ArrayList<ItemFeed> feed = new ArrayList<ItemFeed>();
@@ -238,8 +262,6 @@ public class MainActivity extends Activity {
 
     private BroadcastReceiver onPlayerFinishedEvent=new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
-
-
 
             new ReadFromDatabase().execute();
         }

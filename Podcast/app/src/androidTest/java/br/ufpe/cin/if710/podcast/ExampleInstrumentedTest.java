@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("br.ufpe.cin.if710.podcast", appContext.getPackageName());
+        assertEquals("br.ufp        assertEquals(\"br.ufpe.cin.if710.podcast\", appContext.getPackageName());\ne.cin.if710.podcast", appContext.getPackageName());
     }
 }
