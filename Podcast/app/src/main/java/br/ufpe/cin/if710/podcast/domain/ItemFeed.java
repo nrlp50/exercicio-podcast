@@ -1,10 +1,20 @@
 package br.ufpe.cin.if710.podcast.domain;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.media.MediaPlayer;
 
 import java.io.Serializable;
 
+
+
+
+@Entity(tableName = "podcasts")
 public class ItemFeed implements Serializable {
+
+    @PrimaryKey(autoGenerate = true)
+    public int id;
+
     private final String title;
     private final String link;
     private final String pubDate;
@@ -14,8 +24,10 @@ public class ItemFeed implements Serializable {
     private final String state;
     private final int time;
 
+
     public ItemFeed(String title, String link, String pubDate, String description,
                     String downloadLink, String fileUri, String state, int time) {
+
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
