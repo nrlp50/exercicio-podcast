@@ -4,7 +4,6 @@
 ***Testes de Interface***
 -------------
 
-A ferramenta Espresso Test Recorder permite criar testes UI sem escrever nenhum código de teste. Ao gravar um cenário de teste, você pode gravar suas interações com um dispositivo e adicionar asserções para verificar elementos da UI. O Espresso leva a gravação salva e gera automaticamente um teste de UI correspondente que pode ser executado para testar o aplicativo.
 
 O teste de interface foi gerado através do Espresso Test Record. O teste feito foi basicamente para checar se a view exist, mudar para a página de descrição do ItemFeed selecionado, checar o título do texto e voltar para o início da aplicação.
 
@@ -86,66 +85,91 @@ private static Matcher<View> childAtPosition(
 
 Acesso ao Banco de Dados: Testamos o ContentProvider para sabermos se as operações estavam realmente corretas. 
 
-No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de dados do sistema, porém, ele ainda permite operação no banco. Foi realizado inicialmente o teste de insert no banco.
+No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de dados do sistema, porém, ele ainda permite operação no banco. Foi realizado inicialmente o teste de insert e update no banco.
 
 
 ```Java
 	@RunWith(AndroidJUnit4.class)
-	public class ContentProviderTest extends ProviderTestCase2<PodcastProvider>{
-
-	    MockContentResolver mockContentResolver;
-
-	    public ContentProviderTest(){
-	        super(PodcastProvider.class, PodcastProviderContract.AUTHORITY);
-	    }
+public class ContentProviderTest extends ProviderTestCase2<PodcastProvider>{
 
 
-	    @Before
-	    @Override
-	    public void setUp() throws Exception {
-	        //setContext(InstrumentationRegistry.getTargetContext());
-	        super.setUp();
-
-
-	    }
-
-
-	    @After
-	    @Override
-	    public void tearDown() throws  Exception{
-	        super.tearDown();
-	    }
-
-
-	    @Test
-	    public void insertItemFeedTest(){
-
-
-	        ContentValues cv = new ContentValues();
-	        cv.put(PodcastProviderContract.EPISODE_TITLE, "Tanto Faz");
-	        cv.put(PodcastProviderContract.EPISODE_DATE, "01/10/1010");
-	        cv.put(PodcastProviderContract.EPISODE_DESC, "sem ideia");
-	        cv.put(PodcastProviderContract.EPISODE_DOWNLOAD_LINK, "youtubiu.com");
-	        cv.put(PodcastProviderContract.EPISODE_LINK, "faltando");
-	        cv.put(PodcastProviderContract.EPISODE_FILE_URI, "123451000");
-	        cv.put(PodcastProviderContract.EPISODE_STATE, "0");
-	        cv.put(PodcastProviderContract.EPISODE_TIME, String.valueOf(1000));
+    MockContentResolver mockContentResolver;
 
 
 
+    public ContentProviderTest(){
+        super(PodcastProvider.class, PodcastProviderContract.AUTHORITY);
+    }
 
-	        Uri uri = getMockContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        //setContext(InstrumentationRegistry.getTargetContext());
+        super.setUp();
+
+    }
+
+    @After
+    @Override
+    public void tearDown() throws  Exception{
+        super.tearDown();
+    }	
+```Java
+
+    @Test
+    public void insertItemFeedTest(){
 
 
-	        assertNotNull(uri);
-	    }
+        ContentValues cv = new ContentValues();
+        cv.put(PodcastProviderContract.EPISODE_TITLE, "Tanto Faz");
+        cv.put(PodcastProviderContract.EPISODE_DATE, "01/10/1010");
+        cv.put(PodcastProviderContract.EPISODE_DESC, "sem ideia");
+        cv.put(PodcastProviderContract.EPISODE_DOWNLOAD_LINK, "youtubiu.com");
+        cv.put(PodcastProviderContract.EPISODE_LINK, "faltando");
+        cv.put(PodcastProviderContract.EPISODE_FILE_URI, "123451000");
+        cv.put(PodcastProviderContract.EPISODE_STATE, "0");
+        cv.put(PodcastProviderContract.EPISODE_TIME, String.valueOf(1000));
 
-	}
-	
+
+        Uri uri = getMockContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+
+        assertNotNull(uri);
+    }
+
+
 ```
-***Resultado do Teste de Integração***
+
+
+```Java
+ @Test
+    public void updateItemFeedTest(){
+
+        ContentValues cv = new ContentValues();
+
+        cv.put(PodcastProviderContract.EPISODE_STATE, "2");
+        cv.put(PodcastProviderContract.EPISODE_FILE_URI, "1, 2 feijao com arroz");
+
+        String mSelectionClause = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
+        String[] mSelectionArgs = {"youtubiu.com"};
+
+        int mRowsUpdated = getMockContentResolver().update(
+                PodcastProviderContract.EPISODE_LIST_URI,
+                cv,
+                mSelectionClause,
+                mSelectionArgs
+        );
+
+
+        assertEquals(1,mRowsUpdated);
+    }
+
+}
+
+```
+
+***Resultado dos Testes de Integração***
 -------------
 
-![teste_integracao](images/teste_integracao.png)
+![testes_integracao](images/testes_integracao.png)
 
 
