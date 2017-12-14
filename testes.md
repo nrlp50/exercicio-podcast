@@ -114,6 +114,8 @@ public class ContentProviderTest extends ProviderTestCase2<PodcastProvider>{
     public void tearDown() throws  Exception{
         super.tearDown();
     }	
+````
+
 ```Java
 
     @Test
@@ -135,8 +137,6 @@ public class ContentProviderTest extends ProviderTestCase2<PodcastProvider>{
 
         assertNotNull(uri);
     }
-
-
 ```
 
 
