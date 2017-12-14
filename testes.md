@@ -1,11 +1,12 @@
 **Testes**
 ==========
 
-
-**Testes de Interface:**
+***Testes de Interface***
 -------------
 
-O teste de interface foi gerado através do espresso record. O teste é basicamente checar se a view exist, mudar para a página de descrição do ItemFeed selecionado, checar o título do texto e voltar.
+A ferramenta Espresso Test Recorder permite criar testes UI sem escrever nenhum código de teste. Ao gravar um cenário de teste, você pode gravar suas interações com um dispositivo e adicionar asserções para verificar elementos da UI. O Espresso leva a gravação salva e gera automaticamente um teste de UI correspondente que pode ser executado para testar o aplicativo.
+
+O teste de interface foi gerado através do Espresso Test Record. O teste feito foi basicamente para checar se a view exist, mudar para a página de descrição do ItemFeed selecionado, checar o título do texto e voltar para o início da aplicação.
 
 
 O teste abaixo foi gerado pelo Espresso Test Recorder
@@ -74,18 +75,18 @@ private static Matcher<View> childAtPosition(
     }
 
 ```
-Resultado do teste:
+***Resultado do Teste de Interface***
+-------------
 
 ![teste_interface](images/teste_interface.png)
 
 
-	
-**Testes de Integração:**
---------------------
+***Testes de Integração***
+-------------
 
+Acesso ao Banco de Dados: Testamos o ContentProvider para sabermos se as operações estavam realmente corretas. 
 
-No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de dados do sistema, porém, ele ainda permite operação no banco. Foi realizado o teste de insert no banco.
-
+No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de dados do sistema, porém, ele ainda permite operação no banco. Foi realizado inicialmente o teste de insert no banco.
 
 
 ```Java
@@ -142,6 +143,8 @@ No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de 
 	}
 	
 ```
+***Resultado do Teste de Integracao***
+-------------
 
 ![teste_integracao](images/teste_integracao.png)
 
