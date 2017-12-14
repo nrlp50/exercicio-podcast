@@ -2,7 +2,7 @@
 ==========
 
 ***Testes de Memória***
-----------
+-------------
 
 Foram utilizadas as ferramentas AndroidProfiler e LeakCanary para avaliação dos testes de memória. 
 
@@ -34,3 +34,40 @@ Esse caso foi apenas para mostrar o pico máximo do uso da memória enquanto o d
 Foram realizados testes englobando variadas situações para detecção de memory leak e não foi encontrado nenhum vazamento de memória utilizando a ferramenta LeakCanary.
 
 ![leak_canary](images/leak_canary.png)
+
+
+
+***Boas Práticas Utilizadas***
+-------------
+
+Utilizamos ViewHolder pattern para reaproveitar as views criadas, e com isso não é necessário criar novas views durante o scroll.
+
+```Java
+    static class ViewHolder {
+           TextView item_title;
+           TextView item_date;
+           Button button;
+    }
+```
+
+
+```Java
+ final  ViewHolder holder;
+ final ItemFeed itemFeed = getItem(position);
+
+ if (convertView == null) {
+     convertView = View.inflate(getContext(), linkResource, null);
+     holder = new ViewHolder();
+     holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
+     holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+     holder.button = (Button) convertView.findViewById(R.id.item_action);
+     convertView.setTag(holder);
+ } else {
+     holder = (ViewHolder) convertView.getTag();
+ }
+
+ holder.item_title.setText(getItem(position).getTitle());
+ holder.item_date.setText(getItem(position).getPubDate());
+```
+
+
