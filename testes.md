@@ -143,7 +143,7 @@ No teste de integração, utilizamos o ProviderTestCase2 para isolar o banco de 
 	}
 	
 ```
-***Resultado do Teste de Integracao***
+***Resultado do Teste de Integração***
 -------------
 
 ![teste_integracao](images/teste_integracao.png)
