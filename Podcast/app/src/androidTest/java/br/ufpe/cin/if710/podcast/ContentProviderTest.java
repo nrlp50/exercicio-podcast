@@ -76,4 +76,26 @@ public class ContentProviderTest extends ProviderTestCase2<PodcastProvider>{
     }
 
 
+    @Test
+    public void updateItemFeedTest(){
+
+        ContentValues cv = new ContentValues();
+
+        cv.put(PodcastProviderContract.EPISODE_STATE, "2");
+        cv.put(PodcastProviderContract.EPISODE_FILE_URI, "1, 2 feijao com arroz");
+
+        String mSelectionClause = PodcastProviderContract.EPISODE_DOWNLOAD_LINK + " = ?";
+        String[] mSelectionArgs = {"youtubiu.com"};
+
+        int mRowsUpdated = getMockContentResolver().update(
+                PodcastProviderContract.EPISODE_LIST_URI,
+                cv,
+                mSelectionClause,
+                mSelectionArgs
+        );
+
+
+        assertEquals(1,mRowsUpdated);
+    }
+
 }
